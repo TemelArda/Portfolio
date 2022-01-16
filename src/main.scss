@@ -1,0 +1,153 @@
+//Fonts family
+$primaryFont : roc-grotesk, sans-serif;
+$secondaryFont :  p22-underground, sans-serif; 
+$altFont :  rig-solid-bold-reverse, sans-serif;
+//Font sizes
+$fontXS : 0.562rem;
+$fontS : 0.750rem;
+$fontR1 : 1.000rem;
+$fontL : 1.312rem;
+$fontXL : 1.750rem;
+$font2L : 2.375rem;
+$font3L : 3.188rem;
+$font4L : 4.188rem;
+$font5L : 5.625rem;
+//Colors
+$bgColor : #0D1117;
+$bgColor-400 : #181F2B;
+$bgColor-300 : #232E3E;
+$bgColor-200 : #2E3C52;
+
+
+
+html, body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: $bgColor;
+  }
+.container{
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  place-content: center;
+  z-index: 1;
+}
+.h1{
+    font-family: $primaryFont;
+    font-weight: 400;
+    font-style: normal;
+    font-size: $font5L;
+    color: white;
+    opacity: 83%;
+    text-align: center;
+  }
+.h2{
+    
+    font-family: $primaryFont;
+    font-weight: 400;
+    font-style: normal;
+    font-size: $font4L;
+    color: white;
+    opacity: 83%;
+    text-align: center;
+}
+#c {
+  display: block;
+  position: absolute;
+} 
+
+.Nav-Bar{
+  padding: 8px;
+  position: fixed;
+  top: 0;
+  left:0;
+  width: 100%;
+  height: 15%;
+  z-index: 2;
+}
+.Nav-Bar-Container{
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  justify-content: space-evenly;
+}
+.Nav-Bar-Logo{
+  order: 2;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  padding-right: 275px;
+  .logo{
+    font-family: $altFont;
+    text-decoration: none;
+    color: white;
+    font-size: $font2L;
+    &:hover{
+      color: #5FD972;
+      scale: 1.1;
+    }
+    transition: all 0.3s ease-in-out;
+  } 
+}
+.Nav-Bar-Links{
+  order: 1;
+  width: 50%;
+  height: 100%;
+  padding-left: 100px;
+  display: flex;
+  align-items: center;
+  ul{
+    background-color: $bgColor;
+    list-style: none;
+    display: flex;
+    padding: 0;
+    margin-left: 16px;
+//ox-shadow: -5px 5px 10px rgba(10, 13, 17, 0.2), 5px -5px 10px rgba(10, 13, 17, 0.2), -5px -5px 10px rgba(16, 21, 29, 0.9), 5px 5px 13px rgba(10, 13, 17, 0.9), inset 1px 1px 2px rgba(16, 21, 29, 0.3), inset -1px -1px 2px rgba(10, 13, 17, 0.5);
+  }
+  a{
+    font-family: $secondaryFont;
+    margin-left: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    color: white;
+    font-size: $fontL;
+    padding: 0px;
+    &:hover{
+      color: #5FD972;
+    }
+    transition: color 0.2s ease-in-out;
+  }
+  .Hamburger-Menu{
+    padding: 0px;
+    margin: 0;
+    width: 30px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    .Hamburger-Line{
+      width: 100%;
+      height: 1px;
+      background-color: white;
+      display: block;
+      margin: 4px 0px;
+    }
+  }
+}
+@media screen and (max-width: 810px){
+  .Nav-Bar-Links{
+    display: none;
+  }
+  .Nav-Bar-Logo{
+    padding-right: 2.5rem;
+  }
+}
+  
