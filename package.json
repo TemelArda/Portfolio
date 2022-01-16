@@ -8,6 +8,7 @@
     "lint": "prettier --check \"src/**/*.js\""
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
     "@snowpack/plugin-sass": "^1.4.0",
     "canvas-confetti": "^1.2.0",
     "gsap": "^3.9.1",

@@ -44,7 +44,7 @@ html, body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 0%;
   height: 15%;
   z-index: 2;
 }
@@ -57,23 +57,24 @@ html, body {
   justify-content: space-evenly;
 }
 
-.Nav-Bar-Logo {
-  order: 2;
-  width: 50%;
-  height: 100%;
+.Page-Logo {
   display: flex;
-  align-items: center;
-  justify-content: end;
-  padding-right: 275px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  padding: 0;
+  margin: 2rem 3rem;
+  z-index: 2;
 }
-.Nav-Bar-Logo .logo {
+.Page-Logo .logo {
   font-family: rig-solid-bold-reverse, sans-serif;
   text-decoration: none;
   color: white;
   font-size: 2.375rem;
   transition: all 0.3s ease-in-out;
 }
-.Nav-Bar-Logo .logo:hover {
+.Page-Logo:hover a {
   color: #5FD972;
   scale: 1.1;
 }
