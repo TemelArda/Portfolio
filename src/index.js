@@ -3,52 +3,23 @@
  * When you're ready to start on your site, clear the file. Happy hacking!
  **/
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GUI } from 'dat.gui';
 import gsap from 'gsap';
 import vert from './shaders/vertex.glsl';
 import frag from './shaders/fragment.glsl';
 //Texture Imports
 import mask from './Textures/Mask.png';
-
-
+import texture from './Textures/texture.jpg';
+import particle from './Textures/particle.png';
+import {smoothScroll, animations} from './animations.js';
+import Particles from './particles.js';
 
 
 let canvasWidth = window.innerWidth;
 let canvasheight = window.innerHeight;
-let planeMaterial;
 
 const gui = new GUI()
 
-const createPlane = () => {
-    const planeData = {
-        width: 1,
-        height: 1,
-        widthSegments: 128,
-        heightSegments: 128
-    }
-    let planeGeometry = new THREE.PlaneGeometry(planeData.width, planeData.height, planeData.widthSegments, planeData.heightSegments);
-
-    planeMaterial = new THREE.ShaderMaterial(
-        {
-            uniforms,
-            vertexShader: vert,
-            fragmentShader: frag
-        }
-    );
-    const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    //let wireframeGeom = new THREE.WireframeGeometry( planeGeometry );
-    //const wireframe = new THREE.LineSegments( wireframeGeom, wireframeMaterial );
-
-    return [plane];
-}
-let makeInstance = (geometry, color, x) => {
-    const material = new THREE.MeshPhongMaterial({ color: color });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.x = x;
-    return cube;
-}
 export default class App {
     constructor() {
         this.time = 0;
@@ -64,44 +35,39 @@ export default class App {
             depth: true
         });
         this.camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasheight, 0.1, 2000);
-        this.camera.position.set(195, 206, 400);
         this.renderer.setSize(canvasWidth, canvasheight);
         this.scene = new THREE.Scene();
 
-
+       
         //Initilize Events, Scene, Objects, and Camera
+
         this.initScene();
         this.initTextures();
+        this.initParticles();
         this.addMesh();
         this.windowEvents();
-
-
-
+        
+        
         //Start Rednering   
         this.render();
 
     }
 
     windowEvents() {
+        window.onload = () => {
+            animations();
+        }
         //Responsive Canvas
-        window.addEventListener('resize', function () {
-            canvasWidth = window.innerWidth;
-            canvasheight = window.innerHeight;
-            this.camera.aspect = canvasWidth / canvasheight;
-            this.camera.updateProjectionMatrix();
-
-            this.renderer.setSize(canvasWidth, canvasheight);
-
-        }, false);
+        window.addEventListener('resize', this.resize.bind(this));
 
         //On mouse down
         window.addEventListener('mousedown', e => {
-            
+
         });
 
         window.addEventListener('mouseup', e => {
             //this.material.uniforms.u_mouseClick.value = new THREE.Vector2 (0, 0);
-            
+
         });
 
         window.addEventListener('mousemove', e => {
@@ -113,7 +79,7 @@ export default class App {
             let intersection = (intersections.length) > 0 ? intersections[0] : null;
 
             if (intersection !== null) {
-              
+                gsap.to(this.material.uniforms.rippleInflunce, { duration: .5, value: 1. });
                 gsap.to(this.material.uniforms.mouseClickX, {
                     duration: .5,
                     delay: 0.2,
@@ -126,6 +92,19 @@ export default class App {
                     ease: "SlowMo",
                     value: intersection.point.z
                 });
+            } else {
+                gsap.to(this.material.uniforms.mouseClickX, {
+                    duration: .5,
+                    delay: 0.2,
+                    ease: "SlowMo",
+                    value: 0
+                });
+                gsap.to(this.material.uniforms.mouseClickY, {
+                    duration: .5,
+                    delay: 0.2,
+                    ease: "SlowMo",
+                    value: 0
+                });
             }
         });
 
@@ -133,54 +112,120 @@ export default class App {
     initScene() {
 
         const cameraFolder = gui.addFolder('Camera');
-        cameraFolder.add(this.camera.position, 'x', -10, 1000);
-        cameraFolder.add(this.camera.position, 'y', -10, 1000);
-        cameraFolder.add(this.camera.position, 'z', 0, 1000);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.camera.position.set(270, 400, 0);
+        this.camera.position.set(0, 0, 10);
+        this.camera.lookAt(0, 0, 0);
+        this.camera.rotation.x = -Math.PI / 2;
+        this.camera.rotateZ(Math.PI);
+        cameraFolder.add(this.camera.position, 'x', -1000, 1000);
+        cameraFolder.add(this.camera.position, 'y', -1000, 1000);
+        cameraFolder.add(this.camera.position, 'z', -1000, 1000);
+        cameraFolder.add(this.camera.rotation, 'x', -10, 10, .2);
+        cameraFolder.add(this.camera.rotation, 'y', -10, 10, .2);
+        cameraFolder.add(this.camera.rotation, 'z', -10, 10, .2);
+
+        //this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    }
+    resize() {
+        canvasWidth = window.innerWidth;
+        canvasheight = window.innerHeight;
+        this.renderer.setSize(canvasWidth, canvasheight);
+        this.camera.aspect = canvasWidth / canvasheight;
+        this.camera.updateProjectionMatrix();
+        this.material.uniforms.resolution.value = new THREE.Vector2(canvasWidth, canvasheight);
+    }
+    initParticles() {
+        this.particles = new Particles(2000, 1500, 4.5);
+        this.particleMesh = this.particles.getMesh();
+        this.particleMesh.material.map = this.particle;
+        this.scene.add(this.particleMesh);
     }
     addMesh() {
         this.geometry = new THREE.PlaneBufferGeometry(500, 500, 16, 16);
         this.geometry = new THREE.BufferGeometry();
-        this.setUpGeometry();
+        this.setUpGeometryAttributes();
         this.material = new THREE.ShaderMaterial({
             fragmentShader: frag,
             vertexShader: vert,
             uniforms: {
                 u_time: { value: this.time, type: 'f' },
                 mask: { value: this.mask, type: 't' },
-                mouseClickX: { value:0, type: 'f' },
-                mouseClickY: { value:0, type: 'f' },
+                texture1: { value: this.texture, type: 't' },
+                mouseClickX: { value: 0, type: 'f' },
+                mouseClickY: { value: 0, type: 'f' },
+                progress: { value: 0, type: 'f' },
+                rippleInflunce: { value: 0, type: 'f' },
+                texture_influence: { value: 1, type: 'f' },
+                resolution: { value: new THREE.Vector2(canvasWidth, canvasheight), type: 'v2' },
             },
             transparent: true,
-
+            depthTest: false,
+            depthWrite: false,
             side: THREE.DoubleSide
         });
         this.mesh = new THREE.Points(this.geometry, this.material);
         this.scene.add(this.mesh);
+        const progress = gui.add(this.material.uniforms.progress, 'value', 0, 1, .01);
+
     }
-    setUpGeometry() {
-        let number = 256;
+    setUpGeometryAttributes() {
+        let number = 512;
         this.positions = new THREE.BufferAttribute(new Float32Array(number * number * 3), 3);
+        this.uvs = new THREE.BufferAttribute(new Float32Array(number * number * 2), 2);
         let index = 0;
         for (let i = 0; i < number; i++) {
             let posX = i - (number / 2);
             for (let j = 0; j < number; j++) {
                 this.positions.setXYZ(index, posX, 0, j - (number / 2));
+                this.uvs.setXY(index, i / number, j / number);
                 index++;
             }
         }
         this.geometry.setAttribute('position', this.positions);
+        this.geometry.setAttribute('uv', this.uvs);
     }
 
     initTextures() {
         this.mask = new THREE.TextureLoader().load(mask);
+        this.texture = new THREE.TextureLoader().load(texture);
+        this.particle = new THREE.TextureLoader().load(particle);
     }
+    updateUniforms() {
+        let scroll = window.scrollY * 2
+        this.material.uniforms.texture_influence.value = .86 - scroll / window.innerHeight;
+        //this.material.uniforms.progress.value = window.scrollY/window.innerHeight;
 
+        if (scroll / window.innerHeight < .75) {
+            gsap.to(this.camera.position, { duration: 2.5, x: 270, y: 400, z: 0 });
+            gsap.to(this.camera.rotation, { duration: 2.5, x: -Math.PI / 2, y: 0, z: Math.PI });
+            gsap.to(this.material.uniforms.rippleInflunce, { duration: .5, value: 0 });
+            
+        }
+        if (scroll / window.innerHeight >= .75 && window.scrollY / window.innerHeight < 1.75) {
+            gsap.to(this.camera.position, { duration: 2.5, x: 0, y: 250, z: 450 });
+            gsap.to(this.material.uniforms.progress, { duration: 2.5, value: 0 });
+            gsap.to(this.material.uniforms.rippleInflunce, { duration: .5, value: 1 });
+            gsap.to(this.camera.rotation, { duration: 2.5, x: -Math.PI / 6 , y: -Math.PI / 10, z: 0 });
+            this.material.depthTest = false;
+            this.material.depthWrite = false;
+        }
+        if (scroll/ window.innerHeight >= 1.75) {
+            gsap.to(this.camera.position, { duration: 2.5, x: 0, y: 250, z: 700 });
+            gsap.to(this.material.uniforms.progress, { duration: 1.5, value: 1.2 });
+            gsap.to(this.camera.rotation, { duration: 2.5, x: -Math.PI / 8, y: Math.PI / 8, z: 0 });
+            this.material.depthTest = true;
+            this.material.depthWrite = true;
+        }
+    }
     render() {
-        this.time++;
-        this.controls.update();
+        this.time += 0.01;
+        
         this.material.uniforms.u_time.value = this.time;
+        this.particleMesh.rotation.y += 0.001;
+        this.particleMesh.rotation.z += 0.001;
         this.renderer.render(this.scene, this.camera);
+        this.updateUniforms();
+        smoothScroll();
         requestAnimationFrame(this.render.bind(this));
 
     }
@@ -188,4 +233,3 @@ export default class App {
 }
 
 new App();
-
